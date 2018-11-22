@@ -32,6 +32,8 @@ var (
 	nodeConditionExample = `
 	# output current node condition data for each node
 	%[1]s node-condition
+	# get node conditions for a single node
+	%[1]s node-condition [node]
 	# output a simplified json object with condition data for each node
 	%[1]s node-condition --output json
 `
@@ -57,10 +59,12 @@ func NewNodeConditionOptions(streams genericclioptions.IOStreams) *NodeCondition
 func NewCmdNodeCondition(streams genericclioptions.IOStreams) *cobra.Command {
 	o := NewNodeConditionOptions(streams)
 	cmd := &cobra.Command{
-		Use:   "node-condition",
-		Short: "A kubectl plugin to output node conditions",
-		Long:  fmt.Sprintf(nodeConditionExample, "kubectl"),
-		RunE:  o.Execute,
+		Use:          "node-condition [flags] [node]",
+		Short:        "A kubectl plugin to output node conditions",
+		Args:         cobra.MaximumNArgs(1),
+		Long:         fmt.Sprintf(nodeConditionExample, "kubectl"),
+		RunE:         o.Execute,
+		SilenceUsage: true,
 	}
 	cmd.Flags().StringP("output", "o", "cli", `format to output node condition data (one of "cli" or "json")`)
 	o.configFlags.AddFlags(cmd.Flags())
@@ -79,13 +83,20 @@ func (o *NodeConditionOptions) Execute(cmd *cobra.Command, args []string) error 
 	if err != nil {
 		return err
 	}
-	nodes, err := clientset.CoreV1().Nodes().List(metav1.ListOptions{})
+	opts := metav1.ListOptions{}
+	if len(args) > 0 {
+		opts.FieldSelector = fmt.Sprintf("metadata.name=%s", args[0])
+	}
+	nodes, err := clientset.CoreV1().Nodes().List(opts)
 	if err != nil {
 		return err
 	}
 	output, err := cmd.Flags().GetString("output")
 	if err != nil {
 		return err
+	}
+	if len(nodes.Items) == 0 {
+		return fmt.Errorf("no nodes named %s", args[0])
 	}
 	if output == "cli" {
 		o.cliOutput(nodes)
