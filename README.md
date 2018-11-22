@@ -1,7 +1,7 @@
 kubectl node-condition
 ======================
 
-`kubectl node-nodition` is a plugin for [`kubectl`](https://kubernetes.io/docs/reference/kubectl/overview/) that simply outputs all Conditions linked to a Node.
+`kubectl node-codition` is a plugin for [`kubectl`](https://kubernetes.io/docs/reference/kubectl/overview/) that simply outputs all Conditions linked to a Node.
 
 Install
 -------
