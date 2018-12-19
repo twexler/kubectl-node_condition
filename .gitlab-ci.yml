@@ -1,0 +1,23 @@
+image: golang:1.11
+
+cache:
+  paths:
+    - /apt-cache
+    - /go/src/github.com
+    - /go/src/golang.org
+    - /go/src/google.golang.org
+    - /go/src/gopkg.in
+
+before_script:
+  - mkdir -p /go/src/github.com/twexler
+  - ln -s $CI_PROJECT_DIR /go/src/github.com/twexler/kubectl-node_condition
+
+build:
+  script:
+    - cd /go/src/github.com/twexler/kubectl-node_condition
+    - ls -lah
+    - go get ./...
+    - go build -o kubectl-node_condition main.go
+  artifacts:
+    untracked: false
+    expire_in: 30 days
